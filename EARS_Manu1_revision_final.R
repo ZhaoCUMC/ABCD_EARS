@@ -140,19 +140,21 @@ dt$APPUSAGE_daily.usage_GAME.v2_hrs_mean <- dt$APPUSAGE_daily.usage_GAME.v2_mins
 dt$diff_social.media.v2_ears_stq <- dt$APPUSAGE_daily.usage_SOCIAL.v2_hrs_mean - dt$stq_socialmedia_typical
 #cutoff <- 0.5
 #cutoff <- 1
-dt$grp.index <- ifelse(abs(ears495.y4$diff_social.media.v2_ears_stq) < 0.5, "accurate", "biased")
+dt$grp.index <- ifelse(abs(dt$diff_social.media.v2_ears_stq) < 0.5, "accurate", "biased")
 # dt$grp.index <- ifelse(dt$diff_social.media.v2_ears_stq <= -cutoff, "over",
 #                        ifelse(dt$diff_social.media.v2_ears_stq>= cutoff, "under", "accurate"))
 dt$grp.index <- factor(dt$grp.index)
 table(dt$grp.index)
 
 add.var <- c("SMAQ.total.score", "VGAQ.total.score")
+#mh.var <- c("MH_cbcl_scr_syn_internal_r", "MH_cbcl_scr_syn_external_r")
 screen.time.var <- c("APPUSAGE_daily.usage_all.exl_hrs_mean", "APPUSAGE_daily.usage_SOCIAL.v2_hrs_mean", "APPUSAGE_daily.usage_GAME.v2_hrs_mean",
                      "stq_totaltime_typical.y", "stq_socialmedia_typical", "stq_videogame_typical",
                      "ears.post.y_total_typical_hrs_recode", "ears.post.y_social.media_typical_hrs_recode", "ears.post.y_video.game_typical_hrs_recode")
 full.lst <- c(add.var, screen.time.var)
 
 full.lst.recode <- c("SMAQ Total Score", "VGAQ Total Score",
+                     #"CBCL Internalizing", "CBCL Externalizing",
                      "EARS Total", "EARS SocialMedia", "EARS Gaming",
                      "SR(12-mos) Total", "SR(12-mos) SocialMedia", "SR(12-mos) Gaming",
                      "SR(3-wks) Total", "SR(3-wks) SocialMedia", "SR(3-wks) Gaming")
@@ -164,10 +166,12 @@ colnames(dt)[columns_indices] <- full.lst.recode
 ### all
 dt.all <- dt[full.lst.recode]
 
+library(corrplot)
+library(RColorBrewer)
 M = cor(dt.all, use = "pairwise.complete.obs")
 testRes = cor.mtest(dt.all, conf.level = 0.95, use = "pairwise.complete.obs")
-library(corrplot)
-png("./Output/correlation_plot_all.png", width = 8, height = 8, units = "in", res = 300)  # Open a PDF device
+
+png("./Output/correlation_plot_all_v2.png", width = 8, height = 8, units = "in", res = 300)  # Open a PDF device
 # corrplot(M, p.mat = testRes$p, method = 'circle', type = 'lower', insig = 'blank',
 #          addCoef.col = 'black', number.cex = 0.8, #order = 'AOE', 
 #          order = "original", diag = FALSE)
@@ -176,6 +180,7 @@ corrplot(M, p.mat = testRes$p, method = 'circle', type = 'upper', insig='blank',
          tl.srt = 45,
          tl.cex = 0.9,
          number.cex = 0.8,
+         col = rev(COL2('RdBu', 200)),
          #sig.level = c(0.001, 0.01, 0.05), pch.cex = 0.9,
          order = 'original', diag = FALSE)$corrPos -> p1
 text(p1$x, p1$y, sprintf("%.2f", p1$corr))
@@ -187,12 +192,13 @@ dt.accurate <- dt[which(dt$grp.index=="accurate"), full.lst.recode]
 M = cor(dt.accurate, use = "pairwise.complete.obs")
 testRes = cor.mtest(dt.accurate, conf.level = 0.95, use = "pairwise.complete.obs")
 library(corrplot)
-png("./Output/correlation_plot_accurate.png", width = 8, height = 8, units = "in", res = 300)  # Open a PDF device
+png("./Output/correlation_plot_accurate_v2.png", width = 8, height = 8, units = "in", res = 300)  # Open a PDF device
 corrplot(M, p.mat = testRes$p, method = 'circle', type = 'upper', insig='blank',
          tl.col = "black",
          tl.srt = 45,
          tl.cex = 0.9,
          number.cex = 0.8,
+         col = rev(COL2('RdBu', 200)),
          #sig.level = c(0.001, 0.01, 0.05), pch.cex = 0.9,
          order = 'original', diag = FALSE)$corrPos -> p1
 text(p1$x, p1$y, sprintf("%.2f", p1$corr))
@@ -204,12 +210,13 @@ dt.biased <- dt[which(dt$grp.index=="biased"), full.lst.recode]
 M = cor(dt.biased, use = "pairwise.complete.obs")
 testRes = cor.mtest(dt.biased, conf.level = 0.95, use = "pairwise.complete.obs")
 library(corrplot)
-png("./Output/correlation_plot_biased.png", width = 8, height = 8, units = "in", res = 300)  # Open a PDF device
+png("./Output/correlation_plot_biased_v2.png", width = 8, height = 8, units = "in", res = 300)  # Open a PDF device
 corrplot(M, p.mat = testRes$p, method = 'circle', type = 'upper', insig='blank',
          tl.col = "black",
          tl.srt = 45,
          tl.cex = 0.9,
          number.cex = 0.8,
+         col = rev(COL2('RdBu', 200)),
          #sig.level = c(0.001, 0.01, 0.05), pch.cex = 0.9,
          order = 'original', diag = FALSE)$corrPos -> p1
 text(p1$x, p1$y, sprintf("%.2f", p1$corr))
@@ -220,8 +227,8 @@ library(magick)
 library(grid)
 library(cowplot)
 
-fig1 <- png::readPNG("./Output/correlation_plot_accurate.png")
-fig2 <- png::readPNG("./Output/correlation_plot_biased.png")
+fig1 <- png::readPNG("./Output/correlation_plot_accurate_v2.png")
+fig2 <- png::readPNG("./Output/correlation_plot_biased_v2.png")
 
 p1 <- ggdraw() + draw_image(fig1)
 p2 <- ggdraw() + draw_image(fig2)
@@ -250,35 +257,6 @@ ggsave(
   dpi = 1000,          # High resolution
   limitsize = FALSE   # Allow saving larger sizes
 )
-
-# Create empty matrices to store correlation coefficients and p-values
-cor_matrix <- matrix(NA, nrow = length(full.lst.recode), ncol = length(full.lst.recode))
-# Loop through pairs of variables and calculate correlation coefficients and p-values
-# Significance level
-alpha <- 0.05
-# Loop through pairs of variables and calculate correlation coefficients and p-values
-for (i in seq_along(full.lst.recode)) {
-  for (j in seq_along(full.lst.recode)) {
-    dt.sub <- dt[which(dt$grp.index=="accurate"),]
-    result <- cor.test(dt.sub[[full.lst.recode[i]]], dt.sub[[full.lst.recode[j]]])
-    
-    # # If the p-value is less than the significance level, store the correlation coefficient
-    # # Otherwise, assign NA
-    # if (result$p.value < alpha) {
-    #   cor_matrix[i, j] <- paste0(round(result$estimate, 2), " (", ifelse(result$p.value<0.001, "p<0.001", paste0("p=", round(result$p.value, 3))), ")")
-    # } else {
-    #   cor_matrix[i, j] <- NA
-    # }
-    
-    cor_matrix[i, j] <- paste0(sprintf("%.2f", result$estimate), " (", ifelse(result$p.value<0.001, "p<0.001", paste0("p=", sprintf("%.2f", result$p.value))), ")")
-    
-  }
-}
-# Convert the matrices to a data frame for better printing
-cor_matrix <- as.data.frame(t(cor_matrix))
-rownames(cor_matrix) <- full.lst.recode
-colnames(cor_matrix) <- full.lst.recode
-write.csv(cor_matrix, file = "./Output/pairwise_correlation_accurate.csv", na="")
 
 ################################ 4. Table 3 obj-sub discrepancy ################################
 ## ears-stq
